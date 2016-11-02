@@ -1,0 +1,51 @@
+.center { /* Used from http://www.w3schools.com/css/tryit.asp?filename=trycss_align_container */
+    margin: auto;
+    width: 60%;
+    border: 3px solid #73AD21;
+    padding: 10px;
+}
+body {
+    background-color: turquoise;
+}
+h1, h2 {
+    color: red;
+    text-align: center;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 250;
+}
+h3 {
+    color: red;
+    font-family: "Arial Black", Gadget, sans-serif;
+    font-size: 250;
+}
+.p1, .p2 {
+    width:  700px;
+    color: red;
+    position: relative; 
+    top: -250px;
+    left: 250px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 120%;
+    display: inline-block;
+}
+
+.active {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: #f1f1f1;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+canvas {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+}
+span.score {
+    font-size: 200%;
+}
