@@ -16,7 +16,7 @@ window.onload = function() {
 //	etc.
 
 //				Standard Blackjack
-var deck = [
+var deck = [	
     "2_of_clubs",
     "2_of_diamonds",
     "2_of_hearts",
@@ -41,6 +41,10 @@ var deck = [
     "7_of_diamonds",
     "7_of_hearts",
     "7_of_spades",
+    "8_of_clubs",
+    "8_of_diamonds",
+    "8_of_hearts",
+    "8_of_spades",
     "9_of_clubs",
     "9_of_diamonds",
     "9_of_hearts",
@@ -66,13 +70,12 @@ var deck = [
     "ace_of_hearts",
     "ace_of_spades"
 ];
-play_deck = [];
+play_deck = []; //Used to make a deck with multiple decks of cards
 var canvas = document.getElementById("table");
 var ctx = canvas.getContext("2d");
 var dealer_down = new Image();
 var dealer_up = new Image();
 var player_card = new Image();
-var player_card2 = new Image();
 
 function shuffle() {
 	play_deck = deck
@@ -81,17 +84,13 @@ function shuffle() {
 function draw_table() {
     ctx.fillStyle = "green";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    dealer_up.onload = function() {
-        ctx.drawImage(dealer_up, 700, 0);
-    };
-
-    dealer_up.src = "Images/back.png";
 }
 
 // Function to control randomized decks 
-function decks() {
-
+function random_card() {
+	var rand = Math.floor(Math.random() * play_deck.length);
+	play_deck.splice(rand,1)
+	return play_deck[rand]
 }
 
 // Function to do math on how much you won
@@ -101,30 +100,38 @@ function winnings() {
 
 // Function for the dealer (hit or stand)
 function deal_cards() {
-	if (play_deck < 1){
-		check_cards();
+	if check_cards(){
 		return
 	}
-		
-	var rand = Math.floor(Math.random() * play_deck.length);
-	var card = play_deck[rand]
-    ctx.clearRect(700, 0, 200, 300)
-    ctx.fillRect(700, 0, 200, 300)
-    player_card.src = "Images/" + card + ".png"
-    player_card.onload = function() {
-        ctx.drawImage(player_card, 0, 0, player_card.width, player_card.height, 700, 0, 160, 240);
+	//player 0
+
+	//player 1
+	player_card = random_card()
+	ctx.deawImage(player_card)
+	//player 2
+
+	dealer_down.onload = function() {
+        ctx.drawImage(dealer_down, 730, 30);
     };
-    play_deck.splice(rand,1)
+    dealer_down.src = "Images/back.png";
+
+    dealer_up.src = "Images/" + random_card + ".png"
+	draw_card(dealer_up, 700, 0)
+
 }
+
+function draw_card(card, x, y){
+	card.onload = function() {
+        ctx.drawImage(card, 0, 0, card.width, card.height, x, y, 160, 240);
+    }; 
+}
+
 function check_cards() {
 	if (play_deck.length < 1) {
 		alert("OUT OF CARDS");
 		return true;
-	}
 
-}
-// Function for the npc
-function npc() {
+	}
 
 }
 
