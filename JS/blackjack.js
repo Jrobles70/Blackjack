@@ -100,14 +100,13 @@ function winnings() {
 
 // Function for the dealer (hit or stand)
 function deal_cards() {
-	if check_cards(){
+	if (check_cards()){
 		return
 	}
 	//player 0
 
 	//player 1
-	player_card = random_card()
-	ctx.deawImage(player_card)
+	draw_card(player_card, 1300, 400)
 	//player 2
 
 	dealer_down.onload = function() {
@@ -115,12 +114,12 @@ function deal_cards() {
     };
     dealer_down.src = "Images/back.png";
 
-    dealer_up.src = "Images/" + random_card + ".png"
 	draw_card(dealer_up, 700, 0)
 
 }
 
 function draw_card(card, x, y){
+	card.src = "Images/" + random_card() + ".png"
 	card.onload = function() {
         ctx.drawImage(card, 0, 0, card.width, card.height, x, y, 160, 240);
     }; 
