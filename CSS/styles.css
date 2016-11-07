@@ -49,3 +49,4 @@ canvas {
 span.score {
     font-size: 200%;
 }
+div#preload { display: none; }
