@@ -64,7 +64,7 @@ var canvas = document.getElementById("table");
 var ctx = canvas.getContext("2d");
 var p1 = {
     hand: 0,
-    x: 1300,
+    x: 600,
     y: 400,
     amt_cards: 0,
     card1: new Image(),
@@ -73,8 +73,8 @@ var p1 = {
 }
 var dealer = {
     hand: 0,
-    x: 730,
-    y: 30,
+    x: 200,
+    y: 0,
     amt_cards: 0,
     down: new Image(),
     card1: new Image(),
@@ -101,6 +101,19 @@ function draw_table() {
     */
     ctx.fillStyle = "green";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    draw_card(dealer, dealer.down, 1300, 30);
+    cards_left();
+    ctx.fillStyle = "black";
+    ctx.font = "30px Ariel";
+    ctx.fillText("Dealer", 75, 100);
+}
+
+function cards_left() {
+    ctx.fillStyle = "green";
+    ctx.fillRect(1310, 0, 200, 29);
+    ctx.fillStyle = "black";
+    ctx.font = "20px Ariel";
+    ctx.fillText("Cards Left: " + play_deck.length, 1310, 25);
 }
 
 function random_card() {
@@ -118,12 +131,6 @@ function random_card() {
 }
 
 
-function winnings() {
-    // Function to do math on how much you won
-    // FIXME
-}
-
-
 function deal_cards() {
     /*
     Function deals cards to players and dealer
@@ -133,27 +140,25 @@ function deal_cards() {
     */
 
     // p1 first card
-    draw_card(p1.card1, 1300, 400);
-        // p2 first card
-        // p3 first card
+    draw_card(p1, p1.card1, 600, 400);
+
 
     // dealer down card
     // also gives value to face down card
-    draw_card(dealer.down, 730, 30);
+    draw_card(dealer, dealer.down, 230, 30);
     dealer.card2.src = "Images/" + random_card() + ".png";
 
     // p1 2nd card
-    draw_card(p1.card2, 1270, 370);
+    draw_card(p1, p1.card2, 570, 370);
     total_hand(p1);
-        // p2 2nd card
-        // p3 2nd card
+
 
     // dealer 2nd card
-    draw_card(dealer.card1, 700, 0);
+    draw_card(dealer, dealer.card1, 200, 0);
 
 }
 
-function draw_card(card, x, y) {
+function draw_card(player, card, x, y) {
     /*
     draws card on the canvas
     Input :
@@ -162,6 +167,7 @@ function draw_card(card, x, y) {
             y: value on y axis to be drawn
     Return: None
     */
+    player.amt_cards++;
     if (card == dealer.down)
         card.src = "Images/back.png";
     else
@@ -169,6 +175,7 @@ function draw_card(card, x, y) {
     card.onload = function() {
         ctx.drawImage(card, 0, 0, card.width, card.height, x, y, 160, 240);
     }
+    cards_left();
 }
 
 function total_hand(player) {
@@ -194,20 +201,23 @@ function total_hand(player) {
         // removes everything but the first letter or number of card
         // EX: cards_to_add = ['q', 9]
         cards_to_add[i] = cards_to_add[i].slice(count + 1, count + 2);
-        // if the values is not a number (face card or ace) it will add the correct amount
+        // since the above logic just gets the first letter or number this fixes
+        // 10s coming up as 1s
+        if (cards_to_add[i] == 1)
+            cards_to_add[i] = 10
+            // if the values is not a number (face card or ace) it will add the correct amount
         if (cards_to_add[i] == 'a') {
             player.hand += 11;
             player.sft_ttl = player.card1 + 1;
-            }
-        else if (isNaN(cards_to_add[i]))
+        } else if (isNaN(cards_to_add[i]))
             player.hand += 10;
         else
             player.hand += parseInt(cards_to_add[i]);
-        
-        }
+
     }
     console.log(player.hand);
 }
+
 
 function check_cards() {
     /*
@@ -223,6 +233,42 @@ function check_cards() {
     }
 
 }
+
+function check_bjack(){
+    /*
+    Checks player and dealer hand for a blackjack
+    FIXME
+    */
+}
+
+function winnings() {
+    /*
+    Function to do math on how much you won
+    FIXME
+    */
+}
+
+function draw_chips() {
+    /*
+    draws chips according to how much money the player has 
+    in $100 $50 $20 $5 $1 chips
+    FIXME
+    */
+}
+
+function hit() {
+    /*
+    Called when the dealer needs to hit or when the player hits the button on the canvas.
+    This will call the draw_card, total_hand, and check_bust
+    */
+}
+
+function check_bust() {
+    /*
+    Will check hand after hit for a bust
+    */
+}
+
 
 
 function stop() {
