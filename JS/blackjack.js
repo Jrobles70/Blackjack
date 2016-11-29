@@ -1,6 +1,8 @@
 window.onload = function() {
     document.getElementById("deal").onclick = deal_cards;
-    shuffle();
+    document.getElementById("hit").onclick = hit;
+    document.getElementById("stand").onclick = dealer_turn;
+    play_deck = deck; // creates an array that can be changed when cards are drawn
     draw_table();
 }
 
@@ -59,39 +61,34 @@ var deck = [ // This is the deck key used to make new arrays that can be spliced
     "ace_of_hearts",
     "ace_of_spades"
 ];
-play_deck = []; //Used to make a deck with multiple decks of cards
+play_deck = []; //Empty because different type of Bjack use different sized decks
 var canvas = document.getElementById("table");
 var ctx = canvas.getContext("2d");
 var p1 = {
+    id: "Player",
     hand: 0,
     x: 600,
     y: 400,
     amt_cards: 0,
+    hit: new Image(),
     card1: new Image(),
     card2: new Image(),
-    sft_ttl: 0
+    sft_ttl: 0,
+    is_turn: true
 }
 var dealer = {
+    id: "Dealer",
     hand: 0,
-    x: 200,
-    y: 0,
+    x: 230,
+    y: 30,
     amt_cards: 0,
+    hit: new Image(),
     down: new Image(),
     card1: new Image(),
     card2: new Image(),
     sft_ttl: 0
 }
 
-function shuffle() {
-    /*
-    Creates a new deck for the current game
-    Gets called when the window loads or when cards run out
-    Input: None
-    Return: None
-    */
-
-    play_deck = deck;
-}
 
 function draw_table() {
     /*
@@ -103,9 +100,6 @@ function draw_table() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     draw_card(dealer, dealer.down, 1300, 30);
     cards_left();
-    ctx.fillStyle = "black";
-    ctx.font = "30px Ariel";
-    ctx.fillText("Dealer", 75, 100);
 }
 
 function cards_left() {
@@ -138,23 +132,34 @@ function deal_cards() {
     Input: None
     Return: None
     */
+    if (p1.is_turn == false) // this is to stop the player from dealer while it is the dealers turn
+        return
+    p1.hand = 0
+    dealer.hand = 0
+    p1.amt_cards = 0
+    dealer.amt_cards = 0
+    p1.sft_ttl = 0
+    dealer.sft_ttl = 0
+
+    play_deck = deck; // creates an array that can be changed when cards are drawn
+    draw_table();
 
     // p1 first card
-    draw_card(p1, p1.card1, 600, 400);
+    draw_card(p1, p1.card1, p1.x, p1.y);
 
 
     // dealer down card
     // also gives value to face down card
-    draw_card(dealer, dealer.down, 230, 30);
+    draw_card(dealer, dealer.down, dealer.x, dealer.y);
     dealer.card2.src = "Images/" + random_card() + ".png";
 
     // p1 2nd card
-    draw_card(p1, p1.card2, 570, 370);
-    total_hand(p1);
+    draw_card(p1, p1.card2, p1.x - 30, p1.y - 30);
+    //total_hand(p1);
 
 
     // dealer 2nd card
-    draw_card(dealer, dealer.card1, 200, 0);
+    draw_card(dealer, dealer.card1, dealer.x - 30, dealer.y - 30);
 
 }
 
@@ -168,56 +173,79 @@ function draw_card(player, card, x, y) {
     Return: None
     */
     player.amt_cards++;
-    if (card == dealer.down)
-        card.src = "Images/back.png";
-    else
-        card.src = "Images/" + random_card() + ".png";
+
     card.onload = function() {
         ctx.drawImage(card, 0, 0, card.width, card.height, x, y, 160, 240);
     }
-    cards_left();
+    if (card == dealer.down)
+        card.src = "Images/back.png";
+    else {
+        card.src = "Images/" + random_card() + ".png";
+        cards_left();
+        total_hand(player, card)
+    }
 }
 
-function total_hand(player) {
+function total_hand(player, card) {
     /*
     Function called after initial hand is dealt. Will add up the total you have been dealt and will check for 
     a Blackjack
     input:
-          player: This will take any of the player var names p1, p2, p3, dealer
+          player: This will take any of the player var names p1 and dealer
     return:
           Player.hand: Will return the number you hand adds up to.
     FIXME: There is a console log instead of return for testing reasons
     */
-    var first = player.card1.src;
-    var second = player.card2.src;
-    var cards_to_add = [first, second];
-    // runs twice and finds the first letter or number of card from the src value ex. 'a' from "...Images/ace_of_spades.png"
-    for (i = 0; i < 2; i++) {
-        var card_amt = cards_to_add[i];
-        var count = card_amt.length - 1;
-        while (card_amt[count] != '/') {
-            count--;
-        }
-        // removes everything but the first letter or number of card
-        // EX: cards_to_add = ['q', 9]
-        cards_to_add[i] = cards_to_add[i].slice(count + 1, count + 2);
-        // since the above logic just gets the first letter or number this fixes
-        // 10s coming up as 1s
-        if (cards_to_add[i] == 1)
-            cards_to_add[i] = 10
-            // if the values is not a number (face card or ace) it will add the correct amount
-        if (cards_to_add[i] == 'a') {
-            player.hand += 11;
-            player.sft_ttl = player.card1 + 1;
-        } else if (isNaN(cards_to_add[i]))
-            player.hand += 10;
-        else
-            player.hand += parseInt(cards_to_add[i]);
-
+    var card_to_add = card.src
+        // runs twice and finds the first letter or number of card from the src value ex. 'a' from "...Images/ace_of_spades.png"
+    var count = card_to_add.length - 1;
+    while (card_to_add[count] != '/') {
+        count--;
     }
-    console.log(player.hand);
+    // removes everything but the first letter or number of card
+    // EX: cards_to_add = ['q', 9]
+    card_to_add = card_to_add.slice(count + 1, count + 2);
+    // since the above logic just gets the first letter or number this fixes
+    // 10s coming up as 1s
+    if (card_to_add == 1)
+        card_to_add = 10
+        // if the values is not a number (face card or ace) it will add the correct amount
+    if (card_to_add == 'a') {
+        if (player.hand == 11) { // If player has an ace already
+            player.hand += 1;
+            player.sft_ttl == 12
+        } else
+            player.hand += 11;
+        	player.sft_ttl += player.hand - 10;
+
+    } else if (isNaN(card_to_add))
+        player.hand += 10;
+    else
+        player.hand += parseInt(card_to_add);
+    if ((player.hand > 21) && (player.sft_ttl > 0)) {
+        player.hand = player.sft_ttl;
+    } 
+    if (player.amt_cards > 1) {
+        console.log(player.id + " " + player.hand);
+        draw_score(player);
+    }
+
 }
 
+function draw_score(player) {
+    x = player.x - 175
+    y = player.y + 100
+    ctx.fillStyle = "green";
+    ctx.fillRect(x, y, 50, 100);
+    ctx.fillStyle = "black";
+    ctx.font = "30px Ariel";
+    ctx.fillText(player.id, x, y);
+    if ((player.sft_ttl > 0) && (player == p1)) {
+        ctx.fillText(player.hand, x, y + 50)
+        ctx.fillText(" or " + player.sft_ttl, x + 30, y + 50)
+    } else
+        ctx.fillText(player.hand, x, y + 50)
+}
 
 function check_cards() {
     /*
@@ -234,9 +262,16 @@ function check_cards() {
 
 }
 
-function check_bjack(){
+function dealer_turn() {
+    p1.is_turn = false;
+    ctx.drawImage(dealer.card2, 0, 0, dealer.card2.width, dealer.card2.height, dealer.x, dealer.y, 160, 240);
+    total_hand(dealer, dealer.card2)
+
+}
+
+function deal_anim() {
     /*
-    Checks player and dealer hand for a blackjack
+    Called to create an animation that shows card moving from the deck to player hand
     FIXME
     */
 }
@@ -261,6 +296,11 @@ function hit() {
     Called when the dealer needs to hit or when the player hits the button on the canvas.
     This will call the draw_card, total_hand, and check_bust
     */
+    if (p1.is_turn == false) // stops the player from hitting again while it is the dealers turn
+        return
+    move_x = p1.x - p1.amt_cards * 30;
+    move_y = p1.y - p1.amt_cards * 30;
+    draw_card(p1, p1.hit, move_x, move_y);
 }
 
 function check_bust() {
