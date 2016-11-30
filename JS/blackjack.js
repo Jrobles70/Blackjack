@@ -61,32 +61,33 @@ var deck = [ // This is the deck key used to make new arrays that can be spliced
     "ace_of_hearts",
     "ace_of_spades"
 ];
-play_deck = []; //Empty because different type of Bjack use different sized decks
+var play_deck = []; //Empty because different type of Bjack use different sized decks
 var canvas = document.getElementById("table");
 var ctx = canvas.getContext("2d");
+var new_game = true;
 var p1 = {
     id: "Player",
     hand: 0,
-    x: 600,
+    x: 350,
     y: 400,
     amt_cards: 0,
     hit: new Image(),
     card1: new Image(),
     card2: new Image(),
-    sft_ttl: 0,
+    soft_total: 0,
     is_turn: true
 }
 var dealer = {
     id: "Dealer",
     hand: 0,
-    x: 230,
+    x: 600,
     y: 30,
     amt_cards: 0,
     hit: new Image(),
     down: new Image(),
     card1: new Image(),
     card2: new Image(),
-    sft_ttl: 0
+    soft_total: 0
 }
 
 
@@ -132,14 +133,18 @@ function deal_cards() {
     Input: None
     Return: None
     */
-    if (p1.is_turn == false) // this is to stop the player from dealer while it is the dealers turn
+    if (new_game == false) { // this is to stop the player from dealer while it is the dealers turn
+    	alert("Game is still in progress");
         return
-    p1.hand = 0
-    dealer.hand = 0
-    p1.amt_cards = 0
-    dealer.amt_cards = 0
-    p1.sft_ttl = 0
-    dealer.sft_ttl = 0
+    }
+    new_game = false;
+    p1.is_turn = true;
+    p1.hand = 0;
+    dealer.hand = 0;
+    p1.amt_cards = 0;
+    dealer.amt_cards = 0;
+    p1.soft_total = 0;
+    dealer.soft_total = 0;
 
     play_deck = deck; // creates an array that can be changed when cards are drawn
     draw_table();
@@ -182,7 +187,7 @@ function draw_card(player, card, x, y) {
     else {
         card.src = "Images/" + random_card() + ".png";
         cards_left();
-        total_hand(player, card)
+        total_hand(player, card);
     }
 }
 
@@ -196,35 +201,27 @@ function total_hand(player, card) {
           Player.hand: Will return the number you hand adds up to.
     FIXME: There is a console log instead of return for testing reasons
     */
-    var card_to_add = card.src
+    var card_to_add = card.src;
         // runs twice and finds the first letter or number of card from the src value ex. 'a' from "...Images/ace_of_spades.png"
     var count = card_to_add.length - 1;
     while (card_to_add[count] != '/') {
         count--;
     }
     // removes everything but the first letter or number of card
-    // EX: cards_to_add = ['q', 9]
     card_to_add = card_to_add.slice(count + 1, count + 2);
-    // since the above logic just gets the first letter or number this fixes
-    // 10s coming up as 1s
-    if (card_to_add == 1)
-        card_to_add = 10
-        // if the values is not a number (face card or ace) it will add the correct amount
     if (card_to_add == 'a') {
-        if (player.hand == 11) { // If player has an ace already
-            player.hand += 1;
-            player.sft_ttl == 12
-        } else
-            player.hand += 11;
-        	player.sft_ttl += player.hand - 10;
-
-    } else if (isNaN(card_to_add))
+        player.hand += 11;
+        player.soft_total += 1;
+    } else if ((isNaN(card_to_add)) || (card_to_add == 1)) {
         player.hand += 10;
-    else
+        player.soft_total += 10;
+    } else {
         player.hand += parseInt(card_to_add);
-    if ((player.hand > 21) && (player.sft_ttl > 0)) {
-        player.hand = player.sft_ttl;
-    } 
+    	player.soft_total += parseInt(card_to_add);
+    }
+    if ((player.hand > 21) && (player.hand != player.soft_total))
+    	// this will change the players hand to the soft total if the hard total has busted
+    	player.hand = player.soft_total;
     if (player.amt_cards > 1) {
         console.log(player.id + " " + player.hand);
         draw_score(player);
@@ -233,18 +230,30 @@ function total_hand(player, card) {
 }
 
 function draw_score(player) {
-    x = player.x - 175
-    y = player.y + 100
+    x = player.x - 300;
+    y = player.y + 100;
     ctx.fillStyle = "green";
-    ctx.fillRect(x, y, 50, 100);
+    ctx.fillRect(x, y, 100, 60);
     ctx.fillStyle = "black";
     ctx.font = "30px Ariel";
     ctx.fillText(player.id, x, y);
-    if ((player.sft_ttl > 0) && (player == p1)) {
-        ctx.fillText(player.hand, x, y + 50)
-        ctx.fillText(" or " + player.sft_ttl, x + 30, y + 50)
+    if (player.hand == 21){
+    	ctx.fillText("Blackjack!", x, y + 50)
+    	player.is_turn = false;
+    	new_game = true;
+    	dealer_turn();
+    	return
+    } else if(player.hand > 21){
+    	ctx.fillText(player.hand + " Bust!", x, y + 50);
+    	player.is_turn = false;
+    	new_game = true;
+    	return
+    }
+    if ((player.soft_total != player.hand) && (player == p1)) {
+        ctx.fillText(player.hand, x, y + 50);
+        ctx.fillText(" or " + player.soft_total, x + 30, y + 50);
     } else
-        ctx.fillText(player.hand, x, y + 50)
+        ctx.fillText(player.hand, x, y + 50);
 }
 
 function check_cards() {
@@ -265,7 +274,7 @@ function check_cards() {
 function dealer_turn() {
     p1.is_turn = false;
     ctx.drawImage(dealer.card2, 0, 0, dealer.card2.width, dealer.card2.height, dealer.x, dealer.y, 160, 240);
-    total_hand(dealer, dealer.card2)
+    total_hand(dealer, dealer.card2);
 
 }
 
@@ -296,8 +305,10 @@ function hit() {
     Called when the dealer needs to hit or when the player hits the button on the canvas.
     This will call the draw_card, total_hand, and check_bust
     */
-    if (p1.is_turn == false) // stops the player from hitting again while it is the dealers turn
+    if (p1.is_turn == false){ // stops the player from hitting again while it is the dealers turn
+        alert("Current hand is over. Press deal card to continue");
         return
+    }
     move_x = p1.x - p1.amt_cards * 30;
     move_y = p1.y - p1.amt_cards * 30;
     draw_card(p1, p1.hit, move_x, move_y);
