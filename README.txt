@@ -1,5 +1,5 @@
 This is a project I am working on for fun whenever I have some downtime away from school and work.
-I have added in functions and FIXMEs for features I would like to add in the future.
+I have added in empty functions with FIXMEs of features I would like to add in the future.
 
 As of 11/29/16 this program can:
 
