@@ -10,4 +10,4 @@ Recognize if your hand is equal to or greater than 21 and will end the game
 Stand to end the players turn (currently standing will just reveal the dealers down card and end your turn)
 
 Known bugs:
-Sometimes the players cards will be drawn onto the canvas in the wrong order. (the first card will be drawn under the second card)
+Sometimes the players cards will be drawn onto the canvas in the wrong order. (the first card will be drawn over the second card)
