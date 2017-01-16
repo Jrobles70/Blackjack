@@ -2,8 +2,8 @@ window.onload = function() {
     document.getElementById("deal").onclick = deal_cards;
     document.getElementById("hit").onclick = hit;
     document.getElementById("stand").onclick = dealer_turn;
-    play_deck = deck; // creates an array that can be changed when cards are drawn
     draw_table();
+    shuffle();
 }
 
 //              Standard Blackjack
@@ -61,7 +61,7 @@ var deck = [ // This is the deck key used to make new arrays that can be spliced
     "ace_of_hearts",
     "ace_of_spades"
 ];
-var play_deck = []; //Empty because different type of Bjack use different sized decks
+var play_deck = [];
 var canvas = document.getElementById("table");
 var ctx = canvas.getContext("2d");
 var new_game = true;
@@ -90,6 +90,13 @@ var dealer = {
     soft_total: 0
 }
 
+function shuffle () {
+	for (i = 0; i < 3; i++){
+	play_deck = play_deck.concat(deck);
+	console.log(play_deck.length)
+}
+}
+
 
 function draw_table() {
     /*
@@ -99,7 +106,7 @@ function draw_table() {
     */
     ctx.fillStyle = "green";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    draw_card(dealer, dealer.down, 1300, 30);
+    //draw_card(dealer, dealer.down, 1300, 30);
     cards_left();
 }
 
@@ -133,10 +140,12 @@ function deal_cards() {
     Input: None
     Return: None
     */
-    if (new_game == false) { // this is to stop the player from dealer while it is the dealers turn
-    	alert("Game is still in progress");
+    if (new_game == false) { // this is to stop the player from dealing while it is the dealers turn
+        alert("Game is still in progress");
         return
     }
+    if (play_deck <= 6)
+    	shuffle();
     new_game = false;
     p1.is_turn = true;
     p1.hand = 0;
@@ -146,12 +155,10 @@ function deal_cards() {
     p1.soft_total = 0;
     dealer.soft_total = 0;
 
-    play_deck = deck; // creates an array that can be changed when cards are drawn
     draw_table();
 
     // p1 first card
     draw_card(p1, p1.card1, p1.x, p1.y);
-
 
     // dealer down card
     // also gives value to face down card
@@ -162,7 +169,6 @@ function deal_cards() {
     draw_card(p1, p1.card2, p1.x - 30, p1.y - 30);
     //total_hand(p1);
 
-
     // dealer 2nd card
     draw_card(dealer, dealer.card1, dealer.x - 30, dealer.y - 30);
 
@@ -172,7 +178,7 @@ function draw_card(player, card, x, y) {
     /*
     draws card on the canvas
     Input :
-            card: takes the card source from p1, p2, p3, or dealer object
+            card: takes the card source from p1 or dealer object
             x: value on x axis to be drawn
             y: value on y axis to be drawn
     Return: None
@@ -202,7 +208,7 @@ function total_hand(player, card) {
     FIXME: There is a console log instead of return for testing reasons
     */
     var card_to_add = card.src;
-        // runs twice and finds the first letter or number of card from the src value ex. 'a' from "...Images/ace_of_spades.png"
+    // runs twice and finds the first letter or number of card from the src value ex. 'a' from "...Images/ace_of_spades.png"
     var count = card_to_add.length - 1;
     while (card_to_add[count] != '/') {
         count--;
@@ -217,11 +223,11 @@ function total_hand(player, card) {
         player.soft_total += 10;
     } else {
         player.hand += parseInt(card_to_add);
-    	player.soft_total += parseInt(card_to_add);
+        player.soft_total += parseInt(card_to_add);
     }
     if ((player.hand > 21) && (player.hand != player.soft_total))
-    	// this will change the players hand to the soft total if the hard total has busted
-    	player.hand = player.soft_total;
+    // this will change the players hand to the soft total if the hard total has busted
+        player.hand = player.soft_total;
     if (player.amt_cards > 1) {
         console.log(player.id + " " + player.hand);
         draw_score(player);
@@ -233,21 +239,21 @@ function draw_score(player) {
     x = player.x - 300;
     y = player.y + 100;
     ctx.fillStyle = "green";
-    ctx.fillRect(x, y, 100, 60);
+    ctx.fillRect(x, y - 30, 130, 100);
     ctx.fillStyle = "black";
     ctx.font = "30px Ariel";
     ctx.fillText(player.id, x, y);
-    if (player.hand == 21){
-    	ctx.fillText("Blackjack!", x, y + 50)
-    	player.is_turn = false;
-    	new_game = true;
-    	dealer_turn();
-    	return
-    } else if(player.hand > 21){
-    	ctx.fillText(player.hand + " Bust!", x, y + 50);
-    	player.is_turn = false;
-    	new_game = true;
-    	return
+    if (player.hand == 21) {
+        ctx.fillText("Blackjack!", x, y + 50)
+        player.is_turn = false;
+        new_game = true;
+        dealer_turn();
+        return
+    } else if (player.hand > 21) {
+        ctx.fillText(player.hand + " Bust!", x, y + 50);
+        player.is_turn = false;
+        new_game = true;
+        return
     }
     if ((player.soft_total != player.hand) && (player == p1)) {
         ctx.fillText(player.hand, x, y + 50);
@@ -272,30 +278,26 @@ function check_cards() {
 }
 
 function dealer_turn() {
+	if (new_game == true){
+		alert("Press deal card to continue.")
+		console.log(p1.is_turn, new_game)
+		return
+	}
     p1.is_turn = false;
     ctx.drawImage(dealer.card2, 0, 0, dealer.card2.width, dealer.card2.height, dealer.x, dealer.y, 160, 240);
     total_hand(dealer, dealer.card2);
-
+    while (dealer.hand <= 16){
+    	move_x = dealer.x + (p1.amt_cards - 1) * 30;
+    	move_y = dealer.y + (p1.amt_cards - 1) * 30;
+    	draw_card(dealer, dealer.hit, move_x, move_y);
+    	dealer.hit = new Image();
+    }
+    new_game = true;
 }
 
-function deal_anim() {
+function deal_animation() {
     /*
     Called to create an animation that shows card moving from the deck to player hand
-    FIXME
-    */
-}
-
-function winnings() {
-    /*
-    Function to do math on how much you won
-    FIXME
-    */
-}
-
-function draw_chips() {
-    /*
-    draws chips according to how much money the player has 
-    in $100 $50 $20 $5 $1 chips
     FIXME
     */
 }
@@ -305,8 +307,9 @@ function hit() {
     Called when the dealer needs to hit or when the player hits the button on the canvas.
     This will call the draw_card, total_hand, and check_bust
     */
-    if (p1.is_turn == false){ // stops the player from hitting again while it is the dealers turn
-        alert("Current hand is over. Press deal card to continue");
+    if (p1.is_turn == false || new_game == true) { // stops the player from hitting again while it is the dealers turn
+        alert("Press deal card to continue");
+        console.log(p1.is_turn, new_game)
         return
     }
     move_x = p1.x - p1.amt_cards * 30;
@@ -314,32 +317,9 @@ function hit() {
     draw_card(p1, p1.hit, move_x, move_y);
 }
 
-function check_bust() {
-    /*
-    Will check hand after hit for a bust
-    */
-}
-
-
-
-function stop() {
-    /*
-    Function when you lose all your money/ want to stop
-    FIXME
-    */
-}
-
 function help() {
     /*
-    Function for help/hints on what to do
-    FIXME
-    */
-}
+	FIXME: This function can be used to help the player make a decision 
+	*/
 
-
-function sidebet() {
-    /*
-    Function called from winning to see if you won a side bet. Only used in some Blackjack games
-    FIXME
-    */
 }
